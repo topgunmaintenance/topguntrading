@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { Logger } from "@nestjs/common";
+import { WsAdapter } from "@nestjs/platform-ws";
 import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 import { env } from "./config/env";
@@ -21,10 +22,13 @@ async function bootstrap(): Promise<void> {
   });
 
   app.useGlobalFilters(new HttpErrorFilter());
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   await app.listen(env.API_PORT);
   logger.log(`TopGun Trading API listening on port ${env.API_PORT}`);
   logger.log(`CORS allowed origins: ${env.API_CORS_ORIGINS.join(", ")}`);
+  logger.log(`Market data provider: ${env.MARKET_DATA_PROVIDER}`);
+  logger.log(`Market data stream path: /stream`);
 }
 
 bootstrap().catch((error) => {

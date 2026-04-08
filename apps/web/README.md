@@ -1,23 +1,31 @@
 # @topgun/web
 
 Next.js 14 (App Router) marketing site + authenticated app shell.
-Phase 2 skeleton: landing page, signup, login, dashboard, and
-server-side route handlers that proxy auth to `@topgun/api` and set
-HTTP-only cookies.
+Phase 3 adds watchlists with live quotes and the chart workspace on
+top of the Phase 2 auth shell.
 
 ## Routes
 
-| Path              | Purpose                                                      |
-|-------------------|--------------------------------------------------------------|
-| `/`               | Marketing landing page (public)                              |
-| `/login`          | Login form (public, redirects signed-in users to /dashboard) |
-| `/signup`         | Signup form (public, same redirect behavior)                 |
-| `/dashboard`      | Authenticated app shell with Phase 3+ placeholders           |
-| `/api/auth/signup`| Route handler → POST `@topgun/api` `/auth/signup`            |
-| `/api/auth/login` | Route handler → POST `@topgun/api` `/auth/login`             |
-| `/api/auth/logout`| Route handler → POST `@topgun/api` `/auth/logout`            |
-| `/api/auth/refresh`| Route handler → POST `@topgun/api` `/auth/refresh`          |
-| `/api/auth/me`    | Route handler → GET `@topgun/api` `/auth/me`                 |
+| Path                               | Purpose                                             |
+|------------------------------------|-----------------------------------------------------|
+| `/`                                | Marketing landing (public)                          |
+| `/login`                           | Login                                               |
+| `/signup`                          | Signup                                              |
+| `/dashboard`                       | App shell dashboard                                 |
+| `/watchlists`                      | List of the user's watchlists                       |
+| `/watchlists/[id]`                 | Watchlist detail with live quotes                   |
+| `/chart/[symbolRef]`               | Chart workspace for one symbol                      |
+| `/api/auth/signup` etc.            | Auth proxy to `@topgun/api`                         |
+| `/api/market-data/symbols`         | Symbol search proxy                                 |
+| `/api/market-data/candles`         | Candle fetch proxy                                  |
+| `/api/watchlists`                  | Watchlist list / create                             |
+| `/api/watchlists/[id]`             | Watchlist get / update / delete                     |
+| `/api/watchlists/[id]/items`       | Add an item                                         |
+| `/api/watchlists/[id]/items/[itemId]` | Delete an item                                   |
+
+The browser subscribes to live quotes over WebSocket at
+`NEXT_PUBLIC_WS_URL` (defaults to `ws://localhost:4000/stream`) using
+the `tg_access` HTTP-only cookie for auth.
 
 ## Auth model
 
@@ -31,8 +39,9 @@ HTTP-only cookies.
 ## Env
 
 ```
-NEXT_PUBLIC_APP_URL=http://localhost:3000   # public
-API_INTERNAL_URL=http://localhost:4000      # server-only, how the web reaches the API
+NEXT_PUBLIC_APP_URL=http://localhost:3000          # public
+API_INTERNAL_URL=http://localhost:4000             # server-only
+NEXT_PUBLIC_WS_URL=ws://localhost:4000/stream      # browser → API WS
 ```
 
 See `.env.example` at the repo root.

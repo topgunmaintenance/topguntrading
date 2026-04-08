@@ -16,8 +16,9 @@ export function AppNav({ user }: { user: User }): JSX.Element {
           <Link className="hover:text-text-primary" href="/dashboard">
             Dashboard
           </Link>
-          <span className="cursor-not-allowed text-text-muted">Watchlists</span>
-          <span className="cursor-not-allowed text-text-muted">Chart</span>
+          <Link className="hover:text-text-primary" href="/watchlists">
+            Watchlists
+          </Link>
           <span className="cursor-not-allowed text-text-muted">Journal</span>
           <span className="cursor-not-allowed text-text-muted">Replay</span>
         </nav>

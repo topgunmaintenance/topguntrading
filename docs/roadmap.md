@@ -34,14 +34,14 @@ integrations, real auth, real charts, real AI calls.
       (`.github/workflows/` wiring deferred to Phase 6)
 - [x] Basic design system primitives in `@topgun/ui`
 
-## Phase 3 — Market data + chart workspace
+## Phase 3 — Market data + chart workspace **(complete)**
 
-- `@topgun/market-data` adapter contract finalized
-- One real adapter implemented (provider TBD; see
-  [`docs/market-data-strategy.md`](market-data-strategy.md))
-- Watchlists with live quote streaming over WebSocket
-- Chart workspace using `@topgun/charting` (Lightweight Charts first)
-- Symbol search and instrument metadata
+- [x] `@topgun/market-data` adapter contract finalized
+- [x] One real adapter implemented (Coinbase public, see ADR-0009 in
+      [`decisions.md`](decisions.md))
+- [x] Watchlists with live quote streaming over WebSocket
+- [x] Chart workspace using `@topgun/charting` (Lightweight Charts)
+- [x] Symbol search and instrument metadata
 
 ## Phase 4 — Journal + replay
 

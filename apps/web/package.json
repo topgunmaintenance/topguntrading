@@ -1,6 +1,6 @@
 {
   "name": "@topgun/web",
-  "version": "0.2.0-phase2",
+  "version": "0.3.0-phase3",
   "private": true,
   "description": "TopGun Trading marketing site and application shell.",
   "scripts": {
@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@topgun/charting": "workspace:*",
     "@topgun/config": "workspace:*",
     "@topgun/types": "workspace:*",
     "@topgun/ui": "workspace:*",

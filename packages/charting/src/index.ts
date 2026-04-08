@@ -1,13 +1,11 @@
 /**
  * TopGun Trading — @topgun/charting
  *
- * Phase 1 placeholder.
- *
- * The chart abstraction, the Lightweight Charts implementation, and
- * the indicator/overlay/drawing APIs arrive in Phase 3.
- *
- * See: docs/architecture.md, agents/frontend-lead.md
+ * Thin abstraction over `lightweight-charts`. Consumers import the
+ * `<Chart>` component and the `TIMEFRAME_OPTIONS` list. We do not
+ * import lightweight-charts anywhere else in the app.
  */
+export { Chart, type ChartProps } from "./chart";
+export { TIMEFRAME_OPTIONS, intervalSeconds, type TimeframeOption } from "./timeframe";
 
-export const PHASE = 1 as const;
 export const PACKAGE_NAME = "@topgun/charting" as const;

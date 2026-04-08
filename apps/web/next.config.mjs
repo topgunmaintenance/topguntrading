@@ -3,7 +3,12 @@ const nextConfig = {
   reactStrictMode: true,
   // Workspace packages are consumed from TypeScript source via the
   // `paths` entries in tsconfig.json. Next.js must transpile them.
-  transpilePackages: ["@topgun/ui", "@topgun/types", "@topgun/config"],
+  transpilePackages: [
+    "@topgun/ui",
+    "@topgun/types",
+    "@topgun/config",
+    "@topgun/charting",
+  ],
   async headers() {
     return [
       {

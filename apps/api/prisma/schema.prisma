@@ -1,7 +1,10 @@
-// TopGun Trading — Prisma schema (Phase 2).
+// TopGun Trading — Prisma schema.
 //
 // This schema is the source of truth for the API's data layer. Shared
 // API types in @topgun/types mirror the public shape of these models.
+//
+// Phase 2: User, Session, Workspace.
+// Phase 3: Symbol, Watchlist, WatchlistItem.
 
 generator client {
   provider = "prisma-client-js"
@@ -22,6 +25,7 @@ model User {
 
   sessions     Session[]
   workspaces   Workspace[]
+  watchlists   Watchlist[]
 
   @@map("users")
 }
@@ -31,8 +35,6 @@ model Session {
   userId           String
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Argon2id hash of the refresh token. The raw token is only ever
-  // returned to the client at issuance and never stored in cleartext.
   refreshTokenHash String    @unique
 
   userAgent        String?
@@ -60,4 +62,69 @@ model Workspace {
 
   @@index([userId])
   @@map("workspaces")
+}
+
+// --------------------------------------------------------------------------
+// Phase 3: market data
+// --------------------------------------------------------------------------
+
+model Symbol {
+  id                String   @id @default(cuid())
+
+  // Provider identity, e.g. "coinbase".
+  provider          String
+  // Native product/symbol id from the provider, e.g. "BTC-USD".
+  providerSymbol    String
+
+  assetClass        String
+  baseAsset         String
+  quoteAsset        String
+  displayName       String
+
+  // Decimal strings — we never round provider precision.
+  minPriceIncrement String?
+  minSizeIncrement  String?
+
+  lastSyncedAt      DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  watchlistItems    WatchlistItem[]
+
+  @@unique([provider, providerSymbol])
+  @@map("symbols")
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  isDefault Boolean  @default(false)
+  position  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items     WatchlistItem[]
+
+  @@index([userId])
+  @@map("watchlists")
+}
+
+model WatchlistItem {
+  id          String    @id @default(cuid())
+  watchlistId String
+  watchlist   Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+
+  symbolId    String
+  symbol      Symbol    @relation(fields: [symbolId], references: [id], onDelete: Restrict)
+
+  position    Int       @default(0)
+  addedAt     DateTime  @default(now())
+
+  @@unique([watchlistId, symbolId])
+  @@index([watchlistId])
+  @@map("watchlist_items")
 }

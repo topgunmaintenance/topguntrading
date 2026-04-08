@@ -12,6 +12,8 @@ const EnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   /** Base URL the server-side route handlers use to reach the API. */
   API_INTERNAL_URL: z.string().url().default("http://localhost:4000"),
+  /** Public WebSocket URL the browser uses to reach the API stream. */
+  NEXT_PUBLIC_WS_URL: z.string().url().default("ws://localhost:4000/stream"),
 });
 
 export const env = loadEnv(EnvSchema);

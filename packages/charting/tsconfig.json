@@ -1,0 +1,13 @@
+{
+  "extends": "@topgun/config/tsconfig/react.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "src",
+    "baseUrl": "./",
+    "paths": {
+      "@topgun/types": ["../types/src/index.ts"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.tsx", "src/**/*.test.ts"]
+}

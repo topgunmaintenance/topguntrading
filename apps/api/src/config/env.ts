@@ -25,6 +25,12 @@ const EnvSchema = z.object({
 
   SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(60 * 15), // 15m
   REFRESH_TTL_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 30), // 30d
+
+  // Market data (Phase 3)
+  MARKET_DATA_PROVIDER: z.enum(["mock", "coinbase"]).default("mock"),
+  MARKET_DATA_CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(60),
+  COINBASE_REST_URL: z.string().url().default("https://api.exchange.coinbase.com"),
+  COINBASE_WS_URL: z.string().url().default("wss://advanced-trade-ws.coinbase.com"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

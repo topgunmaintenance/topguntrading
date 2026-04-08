@@ -1,4 +1,5 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@topgun/ui";
+import Link from "next/link";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@topgun/ui";
 import { getCurrentUser } from "@/lib/session";
 
 export default async function DashboardPage(): Promise<JSX.Element> {
@@ -14,8 +15,9 @@ export default async function DashboardPage(): Promise<JSX.Element> {
           Welcome{user?.displayName ? `, ${user.displayName}` : ""}.
         </h1>
         <p className="text-sm text-text-secondary">
-          Phase 2 shell. Workspaces, watchlists, charts, journal, and replay
-          land in later phases — see <code>docs/roadmap.md</code>.
+          Phase 3 adds watchlists, live quotes, and the chart workspace. Journal,
+          replay, and AI review land in later phases — see{" "}
+          <code>docs/roadmap.md</code>.
         </p>
       </header>
 
@@ -23,12 +25,29 @@ export default async function DashboardPage(): Promise<JSX.Element> {
         <Card>
           <CardHeader>
             <CardTitle>Watchlists</CardTitle>
-            <CardDescription>Phase 3</CardDescription>
+            <CardDescription>Live — Phase 3</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <p className="text-sm text-text-muted">
+              Build watchlists, stream live quotes, and jump into the chart
+              workspace.
+            </p>
+            <Link href="/watchlists">
+              <Button variant="primary" size="sm">
+                Open watchlists
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Chart workspace</CardTitle>
+            <CardDescription>Live — Phase 3</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-text-muted">
-              Live quote streaming and custom lists arrive with the market data
-              layer.
+              Open a chart from any watchlist row. Candlesticks, timeframe
+              switching, and a live quote ribbon.
             </p>
           </CardContent>
         </Card>
@@ -51,18 +70,6 @@ export default async function DashboardPage(): Promise<JSX.Element> {
           <CardContent>
             <p className="text-sm text-text-muted">
               Bar-accurate historical playback with lock-forward enforcement.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>AI copilot</CardTitle>
-            <CardDescription>Phase 5</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-text-muted">
-              Versioned prompts. Bounded surfaces. Never frames output as
-              advice.
             </p>
           </CardContent>
         </Card>

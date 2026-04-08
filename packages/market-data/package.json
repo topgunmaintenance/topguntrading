@@ -1,13 +1,34 @@
 {
   "name": "@topgun/market-data",
-  "version": "0.1.0-phase1",
+  "version": "0.3.0-phase3",
   "private": true,
-  "description": "TopGun Trading provider-agnostic market data adapters. Phase 1 scaffold.",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "description": "TopGun Trading provider-agnostic market data adapter layer.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
-    "lint": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "typecheck": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "test": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'"
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@topgun/types": "workspace:*",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@topgun/config": "workspace:*",
+    "@types/node": "^20.14.15",
+    "@types/ws": "^8.5.12",
+    "eslint": "^9.9.0",
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0"
   }
 }

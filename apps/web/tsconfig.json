@@ -7,7 +7,9 @@
       "@topgun/config": ["../../packages/config/src/index.ts"],
       "@topgun/types": ["../../packages/types/src/index.ts"],
       "@topgun/ui": ["../../packages/ui/src/index.ts"],
-      "@topgun/ui/*": ["../../packages/ui/src/*"]
+      "@topgun/ui/*": ["../../packages/ui/src/*"],
+      "@topgun/charting": ["../../packages/charting/src/index.ts"],
+      "@topgun/charting/*": ["../../packages/charting/src/*"]
     }
   },
   "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],

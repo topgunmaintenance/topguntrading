@@ -12,13 +12,16 @@ AI-assisted trade review.
 
 ## Status
 
-**Phase 2 — Web shell + API skeleton.** Installable pnpm monorepo,
-NestJS API with Prisma/Postgres and an email+password auth foundation,
-Next.js 14 web app with landing / auth / dashboard, shared types and UI
-primitives, working lint/typecheck/test/build pipeline, and a one-command
-local bootstrap. No market data, charts, replay, journaling, patterns,
-AI, alerts, extension logic, or broker integrations yet — those arrive
-in Phase 3 onward.
+**Phase 3 — Market data + chart workspace.** On top of the Phase 2
+skeleton: a provider-agnostic market data adapter layer
+(`@topgun/market-data`) with a real Coinbase public adapter and a
+clearly-labeled mock adapter, a Lightweight Charts wrapper
+(`@topgun/charting`), a cookie-authenticated WebSocket stream gateway
+with an upstream-multiplex subscription hub, persisted symbols and
+watchlists in Postgres, and new Next.js pages for watchlists and the
+chart workspace with live quote streaming over WebSockets. No
+journal, replay, patterns, AI, alerts, extension logic, or broker
+integration yet.
 
 See `docs/roadmap.md` for the phase plan and `AGENTS.md` for how this repo
 is operated by Claude Code agents.
@@ -34,8 +37,8 @@ is operated by Claude Code agents.
 - `packages/ui` — Shared design system primitives
 - `packages/types` — Shared TypeScript types and zod schemas
 - `packages/config` — Shared lint, tsconfig, and runtime config
-- `packages/market-data` — Market data abstraction layer (provider-agnostic)
-- `packages/charting` — Charting abstraction over Lightweight Charts / TradingView
+- `packages/market-data` — Provider-agnostic market data adapter layer (Mock + Coinbase)
+- `packages/charting` — Lightweight Charts wrapper (React, client-only)
 - `packages/ai-prompts` — Versioned prompt library for AI features
 - `packages/trading-rules` — Rule engine for discipline and journaling
 - `infra/docker` — Local dev compose stack

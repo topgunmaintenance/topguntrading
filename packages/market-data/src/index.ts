@@ -1,18 +1,25 @@
 /**
  * TopGun Trading — @topgun/market-data
  *
- * Phase 1 placeholder.
- *
- * The IMarketDataAdapter contract, the normalized schema, and the
- * first real provider adapter arrive in Phase 3.
- *
- * Until then, no production code should import from this package
- * expecting real data. Tests may import the MOCK_ADAPTER_ID constant
- * to assert that the package is wired into the workspace.
- *
- * See: docs/market-data-strategy.md, agents/data-engineer.md
+ * Provider-agnostic market data adapter layer. Consumers import the
+ * IMarketDataAdapter interface and the AdapterRegistry factory.
+ * Vendor-specific code stays behind this boundary.
  */
+export type {
+  IMarketDataAdapter,
+  Subscription,
+  QuoteHandler,
+} from "./contract";
+export { MarketDataError } from "./errors";
 
-export const PHASE = 1 as const;
+export { MockAdapter } from "./mock/mock.adapter";
+export { CoinbaseAdapter } from "./coinbase/coinbase.adapter";
+export {
+  COINBASE_PROVIDER_ID,
+  COINBASE_GRANULARITY,
+  COINBASE_CANDLE_LIMIT,
+} from "./coinbase/mapping";
+
+export { AdapterRegistry, type AdapterId, type AdapterRegistryOptions } from "./registry";
+
 export const PACKAGE_NAME = "@topgun/market-data" as const;
-export const MOCK_ADAPTER_ID = "mock" as const;

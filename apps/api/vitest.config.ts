@@ -12,6 +12,10 @@ export default defineConfig({
     alias: {
       "@topgun/config": resolve(__dirname, "../../packages/config/src/index.ts"),
       "@topgun/types": resolve(__dirname, "../../packages/types/src/index.ts"),
+      "@topgun/market-data": resolve(
+        __dirname,
+        "../../packages/market-data/src/index.ts",
+      ),
     },
   },
 });

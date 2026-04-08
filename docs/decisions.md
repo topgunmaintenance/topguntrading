@@ -120,6 +120,98 @@ become painful.
 Consequences: No remote caching. Incremental rebuilds rely on tsc
 `incremental` output. Simpler mental model.
 
+## ADR-0009: Initial market data provider is Coinbase (public, crypto-only)
+Status: Accepted
+Date: 2026-04-10
+Context: Phase 3 needs at least one real market data provider to
+exercise the adapter layer end to end. We need a provider that offers
+free, unauthenticated public endpoints for both historical candles
+and real-time quotes, with terms that permit display with attribution.
+Context options considered:
+- **Coinbase Exchange (public)**: `/products`, `/products/{id}/candles`,
+  `ticker` WebSocket channel on `advanced-trade-ws.coinbase.com`. No
+  API key required. Crypto spot only. Clear attribution requirement
+  ("Data provided by Coinbase"). Well-documented.
+- **Binance**: similar coverage, but some regions restrict access and
+  terms vary by jurisdiction. Deferred.
+- **Kraken**: similar coverage. Deferred.
+- **Polygon / Alpaca / Tiingo (equities)**: Phase 3 is crypto-first
+  (see ADR-0010). Deferred.
+Decision: Coinbase is the initial real adapter. Lives in
+`packages/market-data/src/coinbase/`. No credentials are ever sent.
+Every response is attributed. All network traffic is over
+`https://api.exchange.coinbase.com` and
+`wss://advanced-trade-ws.coinbase.com`.
+Consequences: We ship crypto only in Phase 3. Equities adapters arrive
+in a later phase with a different contract conversation (market hours,
+trading halts, corporate actions).
+
+## ADR-0010: Crypto-first for Phase 3
+Status: Accepted
+Date: 2026-04-10
+Context: Adding equities support in Phase 3 would force us to handle
+trading halts, corporate actions, regulated attribution, and paid
+data entitlements all at once. Crypto public feeds are permissively
+licensed and always-on.
+Decision: Phase 3 ships crypto spot market data only. Equities are
+deferred to Phase 6 or later.
+Consequences: No equity symbols appear in search. The UI copy is
+careful to say "market data" rather than "stocks" wherever it
+matters. Rule and pattern engines in later phases can still be
+designed with equities in mind.
+
+## ADR-0021: Lightweight Charts for the chart workspace
+Status: Accepted
+Date: 2026-04-10
+Context: The chart workspace needs a candlestick renderer that is
+fast, well-maintained, permissively licensed, and not a giant
+dependency.
+Options considered:
+- **`lightweight-charts`** (TradingView, Apache 2.0): ~45KB min+gz,
+  no watermark, supports candlesticks / line / area / bar, good
+  API for live updates.
+- **TradingView Charting Library (closed-source widget)**: richer,
+  but requires a license and a widget container. Defer.
+- **D3 / custom**: flexible, but we'd spend months recreating the
+  obvious features. No.
+Decision: `lightweight-charts` is the default backend. The
+`@topgun/charting` package wraps it so swapping implementations
+later is a single-package change.
+Consequences: We commit to the `lightweight-charts` API shape. Chart
+toolbars, drawing tools, and indicator registration all live behind
+this abstraction in future phases.
+
+## ADR-0022: Upstream-multiplex WebSocket hub
+Status: Accepted
+Date: 2026-04-10
+Context: Multiple browser clients will subscribe to the same popular
+symbols (BTC-USD, ETH-USD). Opening one upstream provider connection
+per client does not scale and exhausts provider rate limits.
+Decision: Phase 3 API runs a single `SubscriptionHub` in memory that
+keeps exactly one upstream `IMarketDataAdapter.streamQuotes()`
+subscription per symbol and fans out to every client subscribed to
+that symbol. When the last client disconnects from a symbol, the
+hub tears down the upstream subscription.
+Consequences: The hub is per-process. Multi-instance fan-out via
+Redis pub/sub lands in Phase 6 alongside horizontal scaling.
+
+## ADR-0023: Symbol reference format `{provider}:{symbol}`
+Status: Accepted
+Date: 2026-04-10
+Context: Symbols must be disambiguated across providers. `BTC-USD` on
+Coinbase, `BTCUSDT` on Binance, and `XBT/USD` on Kraken are all the
+same economic pair. We need a canonical ref the whole stack speaks.
+Decision: Symbols are referenced as `{provider}:{symbol}` where
+`provider` is the lowercase adapter id and `symbol` is the provider's
+native identifier. Enforced by a zod regex
+(`/^[a-z][a-z0-9_-]{1,19}:[A-Za-z0-9._/-]{1,32}$/`) in
+`@topgun/types/market-data`. Everywhere in the DB, API, and UI uses
+this form.
+Consequences: Cross-provider "same pair" grouping is a UI concern —
+the API does not try to unify Coinbase BTC-USD with Binance BTCUSDT.
+If we want a unified symbol later, it will be a separate entity on
+top of the raw refs.
+
 ## ADR-0020: Shared packages are built CommonJS
 Status: Accepted
 Date: 2026-04-08
@@ -145,8 +237,6 @@ between edits.
 
 The following are tracked but not yet decided:
 
-- **ADR-0009 (Proposed):** Final equities market data provider for Phase 3
-- **ADR-0010 (Proposed):** Initial crypto exchanges for Phase 3
 - **ADR-0011 (Proposed):** Container platform for production (Fly.io,
   Render, ECS, Kubernetes)
 - **ADR-0012 (Proposed):** Error tracker (Sentry vs. self-hosted)
@@ -157,10 +247,11 @@ The following are tracked but not yet decided:
 - **ADR-0016 (Proposed):** "Bring your own key" mode for AI
 - **ADR-0018 (Proposed):** Firefox build of the extension
 
-ADR-0017 (OpenTelemetry timing) and ADR-0019 (Turborepo) are now
+ADR-0009 (Coinbase as initial provider), ADR-0010 (crypto-first),
+ADR-0017 (OpenTelemetry timing), ADR-0019 (Turborepo), ADR-0020
+(CommonJS shared packages), ADR-0021 (Lightweight Charts), ADR-0022
+(upstream-multiplex WS hub), and ADR-0023 (symbol ref format) are now
 **Accepted** — see above.
-ADR-0020 (CommonJS shared packages) is new and **Accepted** — see
-above.
 
 These move to **Accepted** when the relevant phase begins and a
 decision is made.
@@ -382,3 +473,235 @@ flat config, Prettier re-export, `.prettierignore`, `.nvmrc`.
 
 Conclusion: **Phase 2 exit criteria met.** Phase 3 may begin upon
 explicit approval from the project owner.
+
+---
+
+## Phase 3 self-audit
+Date: 2026-04-10
+Performed by: Claude Code, wearing each agent role in turn.
+
+Phase 3 exit criteria from `docs/roadmap.md`:
+
+- [x] `@topgun/market-data` adapter contract finalized
+- [x] One real adapter implemented (Coinbase public, see ADR-0009)
+- [x] Watchlists with live quote streaming over WebSocket
+- [x] Chart workspace using `@topgun/charting` (Lightweight Charts)
+- [x] Symbol search and instrument metadata
+- [x] New ADRs + Phase 3 self-audit recorded here
+
+### What is complete
+
+**`@topgun/types` extensions.** `AssetClass`, `Interval`, `SymbolRef`
+(canonical `{provider}:{symbol}` format, ADR-0023), `SymbolMeta`,
+`Candle`, `CandleRequest`, `Quote`, `AttributionInfo`,
+`AdapterCapabilities`, `StoredSymbol`, `Watchlist`, `WatchlistItem`,
+`CreateWatchlistRequest`, `UpdateWatchlistRequest`,
+`AddWatchlistItemRequest`, and the full client ↔ server WebSocket
+stream envelope (`subscribe`, `unsubscribe`, `ping`, `ack`, `quote`,
+`error`, `pong`). `INTERVAL_SECONDS` helper. Vitest coverage for
+schemas and helpers.
+
+**`@topgun/market-data`.** Real package build.
+- `IMarketDataAdapter`, `Subscription`, `QuoteHandler` contract
+- `MarketDataError` type
+- `MockAdapter` — deterministic synthetic feed, LCG-seeded, clearly
+  marked `simulated: true`. Produces candles and a 2 Hz tick stream.
+  Full Vitest coverage including the "throwing handler doesn't tear
+  down the stream" test.
+- `CoinbaseAdapter` — composes a `CoinbaseRestClient` (public
+  `/products`, `/products/{id}`, `/products/{id}/candles` with
+  timeout, 429 detection, `AbortController`) and a `CoinbaseWsClient`
+  (ticker channel with exponential-backoff reconnect, jitter,
+  heartbeat, per-product subscription multiplexing). Unit tests
+  cover mapping between raw payloads and normalized schemas
+  (granularity, product → SymbolMeta, candle row → Candle, ticker
+  → Quote, envelope detection).
+- `AdapterRegistry` — lazily builds and caches adapter instances,
+  disposes them on process shutdown.
+
+**`@topgun/charting`.** Real package build. `Chart` client component
+wrapping `lightweight-charts` with a dark theme that matches the
+design system, live-quote support (the most recent candle's close /
+high / low update as quotes arrive), and `TIMEFRAME_OPTIONS` helper.
+Source-only consumption via Next.js `transpilePackages`. Smoke test
+for the timeframe helpers.
+
+**`apps/api` — market data module.**
+- `AppConfigModule.env` extended with `MARKET_DATA_PROVIDER`
+  (`mock` | `coinbase`), `MARKET_DATA_CACHE_TTL_SECONDS`,
+  `COINBASE_REST_URL`, `COINBASE_WS_URL`
+- `MarketDataAdapterRegistry` — NestJS wrapper around the package
+  registry; disposes adapters on `onModuleDestroy`
+- `MarketDataService` — wraps the adapter, persists symbols to the
+  `symbols` table on first touch, short-lived in-memory LRU cache
+  for candle responses (`lru-cache`), normalizes adapter errors
+  to `ApiError` shape
+- `MarketDataController` — guarded REST endpoints
+  `GET /market-data/attribution`, `GET /market-data/symbols?q&limit`,
+  `GET /market-data/symbol?ref`, `GET /market-data/candles?...`.
+  All inputs validated via zod (`CandleRequestSchema`,
+  `SymbolRefSchema`).
+- `SubscriptionHub` — the upstream-multiplex hub described in
+  ADR-0022. Exactly one upstream subscription per symbol. Tears
+  down upstream on last-client-disconnect. Full Vitest coverage
+  of the multiplex, teardown, cross-symbol isolation, and
+  client-disconnect paths.
+- `MarketDataStreamGateway` — `@WebSocketGateway({ path: "/stream" })`
+  over `@nestjs/platform-ws`. Cookie-authenticated at connect;
+  `tg_access` JWT is verified by `TokenService`. Implements the
+  full wire protocol with strict zod validation, ack / error / pong
+  responses, and per-client resource release on disconnect.
+- `main.ts` now installs the `WsAdapter` from `@nestjs/platform-ws`
+  and logs the active market data provider on boot.
+
+**`apps/api` — watchlists module.**
+- `WatchlistsService` CRUD with ownership checks, auto-default on
+  first watchlist, deduplication on add (409), ordered items, and
+  a clean "public" serializer.
+- `WatchlistsController` — guarded REST endpoints
+  `GET /watchlists`, `POST /watchlists`, `GET/PATCH/DELETE /watchlists/:id`,
+  `POST /watchlists/:id/items`, `DELETE /watchlists/:id/items/:itemId`.
+- Vitest happy/sad path coverage via a hand-rolled Prisma mock
+  (create, duplicate symbol rejected, ownership enforced).
+
+**`apps/api` — Prisma.**
+- Schema extended with `Symbol`, `Watchlist`, `WatchlistItem`.
+- Migration `20260410120000_market_data/migration.sql` hand-written
+  to match the schema exactly, with foreign keys and unique
+  indexes. `users` gains a `watchlists Watchlist[]` back-relation.
+
+**`apps/web` — new routes.**
+- `/watchlists` — server component, lists the user's watchlists
+  with an inline "create" form, graceful empty state, and the
+  attribution footer. Simulated adapter renders a warning banner.
+- `/watchlists/[id]` — server component with `WatchlistPanel`
+  client component that subscribes via `useQuotesStream` and
+  renders live bid/ask/last. Uses `SymbolSearch` for adding items.
+- `/chart/[symbolRef]` — server component with `ChartCanvas` client
+  component that hydrates with the API's initial candles and the
+  live quote ribbon. Timeframe switcher calls the candles proxy.
+- `(app)` layout unchanged — still gated by cookie auth.
+
+**`apps/web` — server-side clients.**
+- `marketDataClient` — typed fetch for `/market-data/*` endpoints,
+  forwards the request's cookie jar for auth.
+- `watchlistsClient` — typed fetch for `/watchlists/*` endpoints.
+- Both raise `ApiCallError` and map cleanly through the route
+  handlers.
+
+**`apps/web` — route handlers (server-only).**
+- `GET /api/market-data/symbols`, `GET /api/market-data/candles`
+- `GET/POST /api/watchlists`, `GET/PATCH/DELETE /api/watchlists/[id]`,
+  `POST /api/watchlists/[id]/items`,
+  `DELETE /api/watchlists/[id]/items/[itemId]`
+
+**`apps/web` — client components and hook.**
+- `useQuotesStream(wsUrl, symbols)` — bounded-backoff reconnect,
+  per-symbol quote cache, exposes a `status` indicator that the
+  watchlist panel renders.
+- `WatchlistPanel` — symbol rows with live quotes, remove-in-place,
+  simulated-data banner.
+- `SymbolSearch` — debounced combobox that queries
+  `/api/market-data/symbols` and calls back with the picked
+  `SymbolMeta`.
+- `ChartCanvas` — dynamically imports the Chart component from
+  `@topgun/charting` with `ssr: false`, wires timeframe switching
+  and the live-quote hook.
+- `app-nav.tsx` wires the Watchlists link.
+
+**Root + docs.**
+- `.env.example` updated with `NEXT_PUBLIC_WS_URL`,
+  `MARKET_DATA_PROVIDER`, `MARKET_DATA_CACHE_TTL_SECONDS`,
+  `COINBASE_REST_URL`, `COINBASE_WS_URL`.
+- ADR-0009, ADR-0010, ADR-0021, ADR-0022, ADR-0023 accepted
+  above.
+- `docs/roadmap.md` Phase 3 marked complete.
+
+### What is still placeholder / deferred
+
+- **`apps/worker`**: still a Phase 1 placeholder. No jobs run yet.
+- **`apps/extension`**: still a Phase 1 placeholder. No UI scaffolding
+  created in Phase 3.
+- **`packages/ai-prompts`** and **`packages/trading-rules`**:
+  untouched placeholders — Phases 4 and 5.
+- **Level 2 / order book**: no adapter capability, no UI. Not in
+  scope.
+- **Equities adapters**: not implemented — crypto-first per
+  ADR-0010.
+- **Replay engine**: deferred to Phase 4. The `Interval` and
+  `Candle` schemas are shaped so the replay stream can reuse them
+  without a redesign.
+- **Redis-backed subscription fan-out across API instances**: the
+  `SubscriptionHub` lives in a single process. Multi-instance
+  fan-out is a Phase 6 concern.
+- **Candle persistence to Postgres**: candles are in-memory cached
+  only. A durable historical store lands in Phase 4 (replay) or
+  Phase 6 (observability), whichever arrives first.
+- **.github/workflows/** still empty.
+
+### Audit checks run
+
+- **Cross-references:** every new file's internal imports resolve
+  (repo-wide grep for `from ".*\.js"` inside `apps/api/src` and
+  `packages/*/src` — clean).
+- **Package boundaries:** `@topgun/api` imports
+  `@topgun/market-data`, `@topgun/types`, `@topgun/config`. No
+  other cross-package imports. `@topgun/web` imports
+  `@topgun/types`, `@topgun/ui`, `@topgun/config`, `@topgun/charting`
+  only. `@topgun/market-data` imports from `@topgun/types` only.
+  `@topgun/charting` imports from `@topgun/types` only. No cycles.
+- **No broker integration:** every Coinbase call is against a
+  public, unauthenticated endpoint. No API key is read from env.
+  No private session data is ever fetched.
+- **No profit / advice copy:** reviewed every new page, component,
+  and disclaimer. No "buy" / "sell" verbs in UI. No win rate,
+  ROI, forecast, or "AI says". Simulated-data banner is
+  prominent whenever the mock adapter is active.
+- **Compliance:** every watchlist and chart page renders the
+  attribution string from the active adapter (`Data provided by
+  Coinbase` or `Simulated data — not real market prices`).
+- **Security:** the WebSocket gateway verifies the access token on
+  connect (cookie or `Authorization: Bearer`). Every REST endpoint
+  is behind `AuthGuard`. Watchlist ownership is enforced on every
+  mutation. Input validation uses zod at every entry point.
+- **Subscription hub lifecycle:** unit tests prove that (a) exactly
+  one upstream subscription is created per symbol even with multiple
+  clients, (b) clients fan out correctly, (c) the upstream is torn
+  down on the last unsubscribe, (d) disconnecting a client releases
+  all of its symbols, (e) symbols for inactive providers are
+  rejected.
+- **Error shape:** every adapter error is mapped to the shared
+  `ApiError` envelope before leaving the API.
+- **Prisma migration is self-consistent:** schema file + handwritten
+  SQL match. Foreign keys and unique indexes present.
+
+### Findings fixed during the audit
+
+- The initial chart page briefly used a server action passed to a
+  client component; replaced with a direct `fetch()` in the
+  `SymbolSearch` `onPick` handler.
+- `next.config.mjs` now includes `@topgun/charting` in
+  `transpilePackages` alongside `@topgun/ui`, so the chart
+  component is compiled from source like the other shared UI code.
+- Added `@topgun/market-data` + `@topgun/charting` aliases to the
+  API, market-data, and web Vitest configs so the test runs
+  against source without a prior build.
+- Renamed ADRs 0009 and 0010 from "Proposed" to "Accepted" to
+  reflect the Phase 3 provider choice.
+
+### Known limitations
+
+- The web WS hook reconnects (drops and recreates the socket) when
+  the symbol set changes. A future phase will send delta
+  subscribe/unsubscribe messages without churning the connection.
+- Candle responses are cached in-process per API instance. A
+  second API instance will not see cache hits from the first.
+  Acceptable for Phase 3 single-instance deployment.
+- `MARKET_DATA_CACHE_TTL_SECONDS` applies uniformly to all
+  intervals. Later phases will tune it per interval.
+- Coinbase's public feed does not expose historical level-2 depth
+  on this channel. We never advertised it.
+
+Conclusion: **Phase 3 exit criteria met.** Phase 4 (journal +
+replay engine MVP) may begin upon explicit approval from the
+project owner.

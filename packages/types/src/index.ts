@@ -10,5 +10,8 @@ export * from "./user";
 export * from "./session";
 export * from "./workspace";
 export * from "./auth";
+export * from "./market-data";
+export * from "./watchlist";
+export * from "./stream";
 
 export const PACKAGE_NAME = "@topgun/types" as const;
