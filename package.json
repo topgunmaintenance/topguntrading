@@ -1,0 +1,23 @@
+{
+  "name": "topguntrading",
+  "private": true,
+  "version": "0.1.0-phase1",
+  "description": "TopGun Trading — premium trading intelligence and practice platform. Phase 1 foundation.",
+  "license": "SEE LICENSE IN LICENSE",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
+    "typecheck": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
+    "test": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
+    "build": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
+    "dev": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@topgun/types",
+  "version": "0.1.0-phase1",
+  "private": true,
+  "description": "TopGun Trading shared TypeScript types and zod schemas. Phase 1 scaffold.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
+    "typecheck": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
+    "test": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'"
+  }
+}

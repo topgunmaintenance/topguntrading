@@ -1,0 +1,61 @@
+# TopGun Trading — local development stack.
+#
+# Phase 1 placeholder. The application services (apps/web, apps/api,
+# apps/worker) are NOT included here yet — they run on the host during
+# development for fast hot reload. Real wiring lands in Phase 2.
+#
+# Bring up the data services:
+#   docker compose -f infra/docker/docker-compose.yml up
+#
+# See: docs/deployment.md
+
+version: "3.9"
+
+name: topgun-trading-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: topgun-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: topgun
+      POSTGRES_PASSWORD: topgun
+      POSTGRES_DB: topgun
+    ports:
+      - "5432:5432"
+    volumes:
+      - topgun-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U topgun -d topgun"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: topgun-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - topgun-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: topgun-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # web UI
+
+volumes:
+  topgun-postgres-data:
+    name: topgun-postgres-data
+  topgun-redis-data:
+    name: topgun-redis-data

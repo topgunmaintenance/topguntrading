@@ -1,0 +1,6 @@
+# TopGun Trading — pnpm workspace declaration.
+# Phase 1 placeholder. Real package wiring lands in Phase 2.
+
+packages:
+  - "apps/*"
+  - "packages/*"

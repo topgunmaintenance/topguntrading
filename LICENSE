@@ -1,0 +1,24 @@
+TopGun Trading
+==============
+
+Copyright (c) 2026 TopGun Trading. All rights reserved.
+
+LICENSE STATUS: PLACEHOLDER — to be finalized by the project owner.
+
+The final license for this repository has not yet been chosen. Until a
+final license is published, the following interim terms apply:
+
+  - This source code is made available for review and contribution by
+    invited collaborators only.
+  - No grant of patent rights is made.
+  - No grant of trademark rights is made. "TopGun Trading" and any
+    associated logos and marks are reserved.
+  - You may not redistribute, sublicense, or use this code in
+    production outside the TopGun Trading project without explicit
+    written permission from the project owner.
+
+The project owner intends to replace this file with a final license
+(commercial, source-available, or open source) before public release.
+That decision is tracked in docs/decisions.md as ADR-0015.
+
+Contact: legal@topguntrading.example
