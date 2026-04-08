@@ -1,23 +1,32 @@
 # @topgun/ui
 
-> **Phase 1 scaffold.** Real components arrive in Phase 2.
+Shared UI primitives for the web app (and, later, the browser
+extension). Built on Tailwind utilities and `class-variance-authority`.
 
-Shared UI primitives for the web app and the browser extension. Built
-on Tailwind and shadcn/ui where useful.
+## Phase 2 contents
 
-Token sources, voice, motion, and accessibility rules live in
-`docs/design-system.md`.
+- `tokens` — colors, radii, spacing, motion, typography (mirrors
+  `docs/design-system.md`)
+- `cn` — safe Tailwind class merge helper (`clsx` + `tailwind-merge`)
+- `Button` — primary, secondary, ghost, danger; sm/md/lg/icon
+- `Input`
+- `Label`
+- `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`,
+  `CardFooter`
 
-## Phase 2 deliverables
+## Later phases
 
-- Button, Input, Textarea, Select, Combobox, Checkbox, Radio, Switch
-- Card, Panel, Section, Toolbar
-- Tabs, Segmented control
-- Tooltip, Popover, Dialog, Drawer, Sheet
-- Toast / Notification
-- Table (dense + comfortable)
-- Command palette
-- Empty state and skeleton loaders
+More primitives (Tabs, Popover, Dialog, Toast, Command palette, Table,
+Skeleton, Empty state) land as the product surface grows. We resist
+adding anything before we use it.
+
+## Testing
+
+Vitest + Testing Library, jsdom environment. Run from the repo root:
+
+```bash
+pnpm --filter @topgun/ui test
+```
 
 ## Owner
 

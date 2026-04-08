@@ -1,14 +1,14 @@
 /**
  * TopGun Trading — @topgun/types
  *
- * Phase 1 placeholder.
- *
- * Real shared types and zod schemas arrive in Phase 2. Until then,
- * this file only exports a phase marker so other packages can import
- * from `@topgun/types` without breaking.
- *
- * See: docs/architecture.md, agents/architect.md, agents/backend-lead.md
+ * Single source of truth for shared types and zod schemas.
+ * Consumed by web, api, worker, and extension.
  */
+export * from "./common";
+export * from "./errors";
+export * from "./user";
+export * from "./session";
+export * from "./workspace";
+export * from "./auth";
 
-export const PHASE = 1 as const;
 export const PACKAGE_NAME = "@topgun/types" as const;

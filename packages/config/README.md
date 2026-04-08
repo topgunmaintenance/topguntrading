@@ -1,18 +1,39 @@
 # @topgun/config
 
-> **Phase 1 scaffold.** Real shared config arrives in Phase 2.
+Shared `tsconfig`, `eslint`, `prettier`, and a runtime env helper.
 
-Shared `tsconfig`, `eslint`, `prettier`, and runtime env helpers. Every
-app and package consumes its standards from here so we never argue
-about formatting or per-repo lint drift.
+Every app and package gets its standards from here. There is no
+per-repo drift.
 
-## Phase 2 deliverables
+## Exports
 
-- `tsconfig.base.json` (already at repo root, will move here)
-- `eslint` flat config
-- `prettier` config
-- `env` helper that loads and validates env vars per app
+- `@topgun/config/tsconfig/base.json` — strict base config
+- `@topgun/config/tsconfig/node.json` — Node services (NestJS, worker)
+- `@topgun/config/tsconfig/react.json` — React libraries (ui package)
+- `@topgun/config/tsconfig/nextjs.json` — Next.js apps
+- `@topgun/config/eslint/base` — base flat config (typescript-eslint)
+- `@topgun/config/eslint/node` — Node overrides
+- `@topgun/config/eslint/react` — browser globals for UI code
+- `@topgun/config/prettier` — shared Prettier config
+- `@topgun/config` (runtime) — `loadEnv(schema)` helper built on zod
+
+## Usage
+
+```ts
+// apps/api/src/config/env.ts
+import { loadEnv } from "@topgun/config";
+import { z } from "zod";
+
+const schema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  API_PORT: z.coerce.number().int().positive().default(4000),
+  DATABASE_URL: z.string().url(),
+});
+
+export const env = loadEnv(schema);
+export type Env = typeof env;
+```
 
 ## Owner
 
-DevOps + Architect.
+DevOps + Architect. See `agents/devops.md` and `agents/architect.md`.

@@ -12,12 +12,16 @@ AI-assisted trade review.
 
 ## Status
 
-**Phase 1 — Foundation.** Documentation, agent operating system, repo governance,
-and clean monorepo scaffolding. No live integrations yet. All placeholders are
-labeled as such in source.
+**Phase 2 — Web shell + API skeleton.** Installable pnpm monorepo,
+NestJS API with Prisma/Postgres and an email+password auth foundation,
+Next.js 14 web app with landing / auth / dashboard, shared types and UI
+primitives, working lint/typecheck/test/build pipeline, and a one-command
+local bootstrap. No market data, charts, replay, journaling, patterns,
+AI, alerts, extension logic, or broker integrations yet — those arrive
+in Phase 3 onward.
 
-See `docs/roadmap.md` for the phase plan and `AGENTS.md` for how this repo is
-operated by Claude Code agents.
+See `docs/roadmap.md` for the phase plan and `AGENTS.md` for how this repo
+is operated by Claude Code agents.
 
 ---
 
@@ -41,20 +45,35 @@ operated by Claude Code agents.
 
 ---
 
-## Quick start (Phase 1 scaffolding only)
-
-> Phase 1 ships scaffolds, not a runnable product. Commands below are placeholders
-> that will be wired up in Phase 2.
+## Quick start
 
 ```bash
-# Install (Phase 2+)
-pnpm install
+# One-command local bootstrap:
+# installs deps, starts Postgres/Redis/mailhog, generates Prisma,
+# applies the initial migration.
+pnpm bootstrap
 
-# Run the local stack (Phase 2+)
-docker compose -f infra/docker/docker-compose.yml up
+# Run the API (NestJS) on :4000
+pnpm dev:api
 
-# Web app (Phase 2+)
-pnpm --filter @topgun/web dev
+# In another terminal, run the web (Next.js) on :3000
+pnpm dev:web
+```
+
+Workspace scripts from the repo root:
+
+```bash
+pnpm lint         # every package + app
+pnpm typecheck    # every package + app
+pnpm test         # every package + app
+pnpm build        # topological build
+pnpm format       # prettier --write .
+```
+
+Stop local services:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml down
 ```
 
 ---

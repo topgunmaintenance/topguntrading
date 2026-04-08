@@ -1,12 +1,9 @@
 /**
  * TopGun Trading — @topgun/config
  *
- * Phase 1 placeholder.
- *
- * Real shared lint, tsconfig, and env helpers land in Phase 2.
- *
- * See: agents/devops.md, agents/architect.md
+ * Shared runtime helpers. Config files (tsconfig, eslint, prettier) are
+ * resolved by tooling directly from the package directory; this module
+ * exports the programmatic pieces only.
  */
-
-export const PHASE = 1 as const;
+export { loadEnv, type EnvSource } from "./env";
 export const PACKAGE_NAME = "@topgun/config" as const;

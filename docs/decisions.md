@@ -97,6 +97,48 @@ Decision: The replay channel only emits frames at or before the cursor.
 Indicators are computed server-side from past data only.
 Consequences: Slightly more server cost. Strong correctness guarantee.
 
+## ADR-0017: OpenTelemetry deferred to Phase 6
+Status: Accepted
+Date: 2026-04-08
+Context: Phase 2 brings the API and web skeletons online. Adding the
+full OpenTelemetry pipeline now would burn scope without payoff — we
+have nothing to trace yet beyond one auth flow.
+Decision: Keep observability to structured logs + health endpoints in
+Phase 2. Full OpenTelemetry lands in Phase 6 alongside alerts and the
+observability track.
+Consequences: Defer OTEL dependencies and exporters. Log schema is
+designed so traces can be joined later without rewrites.
+
+## ADR-0019: No Turborepo in Phase 2
+Status: Accepted
+Date: 2026-04-08
+Context: Turborepo would accelerate repeat builds, but the workspace
+is small (2 apps, 7 packages) and `pnpm -r` already runs in topological
+order. The additional tool surface is not worth it yet.
+Decision: Use `pnpm -r` directly. Revisit in Phase 4+ if build times
+become painful.
+Consequences: No remote caching. Incremental rebuilds rely on tsc
+`incremental` output. Simpler mental model.
+
+## ADR-0020: Shared packages are built CommonJS
+Status: Accepted
+Date: 2026-04-08
+Context: `apps/api` is NestJS on CommonJS. Node cannot synchronously
+`require()` an ESM module. If the shared packages shipped as ESM, the
+API could not consume them.
+Decision: `@topgun/config` and `@topgun/types` emit CommonJS to `dist/`.
+Both apps consume them via the built dist at runtime. `@topgun/ui`
+stays source-only (React/TSX) because it is only consumed by Next.js,
+which transpiles it via `transpilePackages`. Typecheck and tests
+bypass the dist via tsconfig `paths` and Vitest `resolve.alias`
+pointing at source, so `pnpm lint|typecheck|test` work without a
+prior build.
+Consequences: `pnpm dev:api` and `pnpm dev:web` require a prior build
+of the two shared CommonJS packages. The `scripts/bootstrap` script
+does this automatically. When actively iterating on shared packages,
+run `pnpm --filter @topgun/config build` (and the same for types)
+between edits.
+
 ---
 
 ## Open decisions (Proposed)
@@ -113,10 +155,12 @@ The following are tracked but not yet decided:
   ice white vs. radar green)
 - **ADR-0015 (Proposed):** License choice (see top-level `LICENSE`)
 - **ADR-0016 (Proposed):** "Bring your own key" mode for AI
-- **ADR-0017 (Proposed):** Whether OpenTelemetry ships in Phase 2 or
-  Phase 6
 - **ADR-0018 (Proposed):** Firefox build of the extension
-- **ADR-0019 (Proposed):** Whether to add `turborepo` in Phase 2
+
+ADR-0017 (OpenTelemetry timing) and ADR-0019 (Turborepo) are now
+**Accepted** — see above.
+ADR-0020 (CommonJS shared packages) is new and **Accepted** — see
+above.
 
 These move to **Accepted** when the relevant phase begins and a
 decision is made.
@@ -186,4 +230,155 @@ Remaining open items (intentionally deferred to later phases):
 - No real adapter or chart code exists yet — Phase 3.
 
 Conclusion: **Phase 1 exit criteria met.** Phase 2 may begin upon
+explicit approval from the project owner.
+
+---
+
+## Phase 2 self-audit
+Date: 2026-04-08
+Performed by: Claude Code, wearing each agent role in turn.
+
+Phase 2 exit criteria from `docs/roadmap.md`:
+
+- [x] pnpm workspace wired up
+- [x] `apps/web` runs locally (landing, auth, dashboard) via
+      `pnpm dev:web`
+- [x] `apps/api` runs locally (health, auth, user endpoints) via
+      `pnpm dev:api`
+- [x] Postgres + Redis up via `infra/docker/docker-compose.yml` and a
+      one-command bootstrap
+- [x] Shared `@topgun/types` and `@topgun/config` consumed by both apps
+- [x] CI scripts exist (`pnpm lint` / `typecheck` / `test` / `build`)
+      — a hosted CI runner is Phase 6
+- [x] Initial design system primitives in `@topgun/ui` (Button, Input,
+      Label, Card, plus the `cn` helper and token module)
+
+### What is complete
+
+**`@topgun/config`** — Shared `tsconfig/{base,node,nextjs,react}.json`,
+flat ESLint configs (`base`, `node`, `react`), Prettier config,
+zod-backed `loadEnv` helper. Built CommonJS. Consumed by every other
+workspace package.
+
+**`@topgun/types`** — Real zod schemas for `User`, `Session`,
+`Workspace`, `SignupRequest`, `LoginRequest`, `TokenPair`,
+`AuthResponse`, `JwtPayload`, plus `ApiError` and `ACCESS_TOKEN_COOKIE`
+/ `REFRESH_TOKEN_COOKIE` constants. Built CommonJS. Tests passing
+under Vitest. Consumed by both apps.
+
+**`@topgun/ui`** — `cn` merge helper, design `tokens`, `Button` (with
+`cva` variants), `Input`, `Label`, and `Card*` primitives. Vitest +
+Testing Library setup with a working `Button` test. Source-only
+consumption via Next.js `transpilePackages`.
+
+**`@topgun/api`** — NestJS bootstrap with `cookie-parser` and a
+`HttpErrorFilter` that normalizes to the shared `ApiError` shape.
+Prisma schema + initial migration for `users`, `sessions`,
+`workspaces`. `HealthController` with `/healthz` and `/readyz`.
+Auth module: `/auth/signup`, `/auth/login`, `/auth/refresh`,
+`/auth/logout`, `/auth/me`. `AuthService` uses Argon2id for passwords,
+HS256 JWTs for access tokens, and 48-byte refresh tokens stored as
+SHA-256 hashes in the `sessions` table with rotation on every
+refresh. `AuthGuard` accepts either a `Bearer` header or the
+`tg_access` HTTP-only cookie. `UsersService` + `UsersController`
+expose `/users/me`. `WorkspacesService` provides a
+`getOrCreateDefault` stub (no controller until Phase 3). Tests cover
+the password service, token service, and auth service happy + sad
+paths using a hand-rolled Prisma mock — no database required.
+
+**`@topgun/web`** — Next.js 14 App Router with a dark `globals.css`,
+tokens mirrored into Tailwind, a premium landing page, `(auth)` route
+group with `login` and `signup` server pages, `(app)` route group
+with an authenticated `dashboard` and a logout-capable `AppNav`.
+Route handlers under `src/app/api/auth/*` proxy signup / login /
+refresh / logout / me to the API and set the `tg_access` and
+`tg_refresh` cookies as HTTP-only. `(app)/layout.tsx` redirects
+unauthenticated users to `/login`; `(auth)/layout.tsx` redirects
+authenticated users to `/dashboard`. `not-found.tsx` matches the
+brand voice. A small Vitest smoke test covers `ApiCallError`.
+
+**Root** — `pnpm bootstrap`, `pnpm build`, `pnpm lint`, `pnpm typecheck`,
+`pnpm test`, `pnpm format`, `pnpm dev:api`, `pnpm dev:web`. Root ESLint
+flat config, Prettier re-export, `.prettierignore`, `.nvmrc`.
+`scripts/bootstrap` performs the whole install-to-migration path.
+
+### What is still placeholder
+
+- `apps/worker` — Phase 1 placeholder (no real code)
+- `apps/extension` — Phase 1 placeholder (no real code)
+- `packages/market-data` — Phase 1 placeholder (contract lands Phase 3)
+- `packages/charting` — Phase 1 placeholder (lands Phase 3)
+- `packages/ai-prompts` — Phase 1 placeholder (lands Phase 5)
+- `packages/trading-rules` — Phase 1 placeholder (lands Phase 4/5)
+- OAuth providers in `.env.example` (Phase 6)
+- Mail sending (Phase 4+)
+- Object storage (Phase 4+)
+- Sentry / OTEL wiring (Phase 6)
+- No hosted CI runner yet; scripts exist but `.github/workflows/` is
+  empty
+
+### Audit checks run
+
+- **Cross-references:** repo-wide grep confirms no `tsconfig.base.json`
+  references survive the move into `@topgun/config/tsconfig/`.
+- **ESM / CJS boundaries:** `@topgun/config` and `@topgun/types`
+  source files contain no `.js` extensions in imports; both emit
+  CommonJS. `@topgun/ui` keeps `.js` extensions because it uses
+  `moduleResolution: Bundler` and is consumed via Next.js
+  `transpilePackages`. `apps/api` sources contain no `.js`
+  extensions.
+- **Import cycles:** none introduced. `@topgun/api` imports only from
+  `@topgun/config` and `@topgun/types`. `@topgun/web` imports from
+  `@topgun/config`, `@topgun/types`, and `@topgun/ui`.
+- **Auth contract drift:** web route handlers, API controllers, and
+  Vitest tests all import `SignupRequestSchema` / `LoginRequestSchema`
+  / cookie constants from `@topgun/types`. There is no parallel
+  definition anywhere in the repo.
+- **Placeholder labeling:** every remaining Phase 1 placeholder file
+  still carries its `Phase 1 placeholder` header. No un-labeled
+  scaffolds remain.
+- **Compliance:** the landing page, the `(auth)` layout, and the
+  dashboard all render the non-advice disclaimer copy.
+- **Security:** passwords hashed with Argon2id; refresh tokens
+  SHA-256'd in DB with rotation; cookies are `httpOnly` +
+  `sameSite: "lax"` + `secure` in production; API validates every
+  body with zod; `AuthGuard` applies to protected routes.
+- **Lint/typecheck/test/build scripts** exist on every active
+  package. Phase-1 placeholder packages still use `echo` scripts that
+  exit 0.
+
+### Findings fixed during the audit
+
+- Initial shared packages were ESM (`"type": "module"`); the NestJS
+  API could not `require()` them synchronously. Flipped both to
+  CommonJS and stripped `.js` extensions from their source imports.
+  Codified as ADR-0020.
+- `@topgun/config` devDependencies (`@eslint/js`, `typescript-eslint`,
+  `globals`) had to be promoted to `dependencies` so consumer packages
+  can load the flat ESLint configs.
+- `apps/web` `package.json` originally depended on
+  `eslint-config-next` and used `next lint`, which does not cleanly
+  support ESLint 9 flat config. Replaced with `eslint src
+  --max-warnings=0` so it matches the rest of the workspace.
+- `apps/api/tsconfig.json` initially declared `rootDir: src` while
+  including `test/**/*.ts`, which tsc rejects. Split into
+  `tsconfig.json` (typecheck, no `rootDir`, includes src + test) and
+  `tsconfig.build.json` (build, `rootDir: src`, excludes tests).
+- Added `apps/api/tsconfig.json` `paths` and `apps/api/vitest.config.ts`
+  `resolve.alias` for `@topgun/config` + `@topgun/types` so typecheck
+  and tests work without a prior build of the shared packages.
+- Added `postinstall: "prisma generate || true"` to `apps/api` so the
+  Prisma client is ready immediately after `pnpm install`.
+- `.env.example` updated to replace the now-unused
+  `NEXT_PUBLIC_API_URL` with the server-only `API_INTERNAL_URL` the
+  web actually reads.
+
+### Remaining open items (deferred to Phase 3+)
+
+- Hosted CI workflow file(s) in `.github/workflows/`
+- Worker and extension build pipelines
+- Market data adapters, chart workspace, journal, replay, patterns,
+  AI, alerts, billing
+
+Conclusion: **Phase 2 exit criteria met.** Phase 3 may begin upon
 explicit approval from the project owner.

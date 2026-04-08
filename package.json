@@ -1,10 +1,10 @@
 {
   "name": "topguntrading",
   "private": true,
-  "version": "0.1.0-phase1",
-  "description": "TopGun Trading — premium trading intelligence and practice platform. Phase 1 foundation.",
+  "version": "0.2.0-phase2",
+  "description": "TopGun Trading — premium trading intelligence and practice platform.",
   "license": "SEE LICENSE IN LICENSE",
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@9.7.0",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
@@ -14,10 +14,23 @@
     "packages/*"
   ],
   "scripts": {
-    "lint": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "typecheck": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "test": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "build": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "dev": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'"
+    "bootstrap": "bash scripts/bootstrap",
+    "build": "pnpm -r build",
+    "build:packages": "pnpm -r --filter \"./packages/*\" build",
+    "dev:api": "pnpm --filter @topgun/api dev",
+    "dev:web": "pnpm --filter @topgun/web dev",
+    "lint": "pnpm -r --parallel lint",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "pnpm -r --parallel test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@topgun/config": "workspace:*",
+    "eslint": "^9.9.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.1.0"
   }
 }

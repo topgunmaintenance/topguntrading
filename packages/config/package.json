@@ -1,13 +1,50 @@
 {
   "name": "@topgun/config",
-  "version": "0.1.0-phase1",
+  "version": "0.2.0-phase2",
   "private": true,
-  "description": "TopGun Trading shared lint, tsconfig, and runtime config helpers. Phase 1 scaffold.",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "description": "TopGun Trading shared tsconfig, eslint, prettier, and runtime env helpers.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./env": {
+      "types": "./dist/env.d.ts",
+      "default": "./dist/env.js"
+    },
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/node.json": "./tsconfig/node.json",
+    "./tsconfig/nextjs.json": "./tsconfig/nextjs.json",
+    "./tsconfig/react.json": "./tsconfig/react.json",
+    "./eslint/base": "./eslint/base.mjs",
+    "./eslint/node": "./eslint/node.mjs",
+    "./eslint/react": "./eslint/react.mjs",
+    "./prettier": "./prettier.mjs"
+  },
+  "files": [
+    "dist",
+    "tsconfig",
+    "eslint",
+    "prettier.mjs"
+  ],
   "scripts": {
-    "lint": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "typecheck": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "test": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'"
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'no runtime tests in @topgun/config'"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.9.0",
+    "globals": "^15.9.0",
+    "typescript-eslint": "^8.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.15",
+    "eslint": "^9.9.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
   }
 }

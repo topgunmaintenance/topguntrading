@@ -4,7 +4,7 @@ This roadmap is **phase-gated**. We do not start a new phase until the current
 phase is complete and audited. Phase numbers are stable. Phase content can be
 refined as we learn.
 
-## Phase 1 — Foundation (current)
+## Phase 1 — Foundation **(complete)**
 
 **Goal:** ship a credible, defensible foundation. Documentation, agent
 operating system, repo governance, and clean monorepo scaffolding.
@@ -22,16 +22,17 @@ operating system, repo governance, and clean monorepo scaffolding.
 **Out of scope for Phase 1:** any real backend logic, real market data
 integrations, real auth, real charts, real AI calls.
 
-## Phase 2 — Web shell + API skeleton
+## Phase 2 — Web shell + API skeleton **(current phase, complete)**
 
-- pnpm workspace wired up
-- `apps/web` runs locally with a real landing page and authenticated
-  app shell
-- `apps/api` runs locally with health, auth, and user endpoints
-- Postgres + Redis up via Docker Compose
-- Shared `@topgun/types` and `@topgun/config` consumed by both apps
-- CI runs lint, type-check, unit tests
-- Basic design system primitives in `@topgun/ui`
+- [x] pnpm workspace wired up
+- [x] `apps/web` runs locally with a real landing page and authenticated
+      app shell
+- [x] `apps/api` runs locally with health, auth, and user endpoints
+- [x] Postgres + Redis up via Docker Compose (`pnpm bootstrap`)
+- [x] Shared `@topgun/types` and `@topgun/config` consumed by both apps
+- [x] Root scripts run lint, type-check, unit tests, build
+      (`.github/workflows/` wiring deferred to Phase 6)
+- [x] Basic design system primitives in `@topgun/ui`
 
 ## Phase 3 — Market data + chart workspace
 
