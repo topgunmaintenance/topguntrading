@@ -21,6 +21,14 @@ export default tseslint.config(
       "**/node_modules/**",
       "**/prisma/migrations/**",
       "**/next-env.d.ts",
+      // Committed tsc output in src/ (shared packages ship built JS
+      // alongside source to support both tsc-based and bundler
+      // consumers). These are generated artifacts — lint the .ts
+      // sources only.
+      "**/src/**/*.js",
+      "**/src/**/*.js.map",
+      "**/src/**/*.d.ts",
+      "**/src/**/*.d.ts.map",
     ],
   },
   js.configs.recommended,

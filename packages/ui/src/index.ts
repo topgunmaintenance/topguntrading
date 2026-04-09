@@ -18,5 +18,6 @@ export {
   CardContent,
   CardFooter,
 } from "./card.js";
+export { DataDisclaimer, type DataDisclaimerProps } from "./data-disclaimer.js";
 
 export const PACKAGE_NAME = "@topgun/ui" as const;

@@ -1,5 +1,5 @@
 import {
-  CanActivate,
+  type CanActivate,
   type ExecutionContext,
   Injectable,
   UnauthorizedException,

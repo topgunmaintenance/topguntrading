@@ -9,6 +9,18 @@ const nextConfig = {
     "@topgun/config",
     "@topgun/charting",
   ],
+  // Workspace packages (e.g. @topgun/ui) use NodeNext-style ESM imports
+  // with explicit ".js" extensions even in .ts/.tsx sources. Teach
+  // webpack to resolve those back to the TypeScript source files.
+  webpack(config) {
+    config.resolve.extensionAlias = {
+      ...(config.resolve.extensionAlias ?? {}),
+      ".js": [".ts", ".tsx", ".js"],
+      ".jsx": [".tsx", ".jsx"],
+      ".mjs": [".mts", ".mjs"],
+    };
+    return config;
+  },
   async headers() {
     return [
       {

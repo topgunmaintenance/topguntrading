@@ -6,7 +6,7 @@
 export class MarketDataError extends Error {
   readonly code: string;
   readonly provider: string;
-  readonly cause: unknown;
+  override readonly cause: unknown;
 
   constructor(provider: string, code: string, message: string, cause?: unknown) {
     super(message);

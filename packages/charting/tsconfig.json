@@ -2,7 +2,7 @@
   "extends": "@topgun/config/tsconfig/react.json",
   "compilerOptions": {
     "noEmit": true,
-    "rootDir": "src",
+    "rootDir": "../..",
     "baseUrl": "./",
     "paths": {
       "@topgun/types": ["../types/src/index.ts"]

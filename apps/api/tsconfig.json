@@ -13,12 +13,7 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "types": ["node"],
-    "paths": {
-      "@topgun/config": ["../../packages/config/src/index.ts"],
-      "@topgun/types": ["../../packages/types/src/index.ts"],
-      "@topgun/market-data": ["../../packages/market-data/src/index.ts"]
-    }
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
   "exclude": ["node_modules", "dist"]

@@ -1,14 +1,24 @@
 /**
  * TopGun Trading — @topgun/trading-rules
  *
- * Phase 1 placeholder.
+ * Pure-function detectors and indicator helpers. Activated in
+ * Phase 3.5 for the Whale Activity observational feature.
  *
- * The rule engine arrives in Phase 4. The pattern detector catalog
- * arrives in Phase 5.
- *
- * See: docs/pattern-engine.md, docs/journal-system.md,
- *      agents/data-engineer.md, agents/backend-lead.md
+ * See: docs/pattern-engine.md, docs/decisions.md ADR-0027
  */
 
-export const PHASE = 1 as const;
+export {
+  rollingMean,
+  rollingMedian,
+  relativeVolume,
+} from "./indicators/rolling";
+
+export {
+  detectLargeTrades,
+  LARGE_TRADES_DEFAULTS,
+  LARGE_TRADES_DETECTOR_ID,
+  LARGE_TRADES_DETECTOR_VERSION,
+  type LargeTradesParams,
+} from "./detectors/large-trades";
+
 export const PACKAGE_NAME = "@topgun/trading-rules" as const;

@@ -27,6 +27,7 @@
     "@prisma/client": "^5.18.0",
     "@topgun/config": "workspace:*",
     "@topgun/market-data": "workspace:*",
+    "@topgun/trading-rules": "workspace:*",
     "@topgun/types": "workspace:*",
     "argon2": "^0.40.3",
     "cookie-parser": "^1.4.6",

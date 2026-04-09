@@ -1,13 +1,32 @@
 {
   "name": "@topgun/trading-rules",
-  "version": "0.1.0-phase1",
+  "version": "0.3.5-phase3.5",
   "private": true,
-  "description": "TopGun Trading personal rule engine and pattern detector library. Phase 1 scaffold.",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "description": "TopGun Trading detectors and indicator helpers. Pure functions, no IO. Phase 3.5 activates this package with detectLargeTrades for the Whale Activity observational feature.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
-    "lint": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "typecheck": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'",
-    "test": "echo 'TopGun Trading — Phase 1 placeholder. Wired up in Phase 2.'"
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@topgun/types": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@topgun/config": "workspace:*",
+    "@types/node": "^20.14.15",
+    "eslint": "^9.9.0",
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0"
   }
 }

@@ -26,9 +26,9 @@ interface CandleCacheKey {
   provider: string;
   symbol: string;
   interval: Interval;
-  from?: string;
-  to?: string;
-  limit?: number;
+  from?: string | undefined;
+  to?: string | undefined;
+  limit?: number | undefined;
 }
 
 /**

@@ -9,7 +9,7 @@ import { ApiCallError } from "./api-client";
 
 async function call<T>(
   path: string,
-  init: RequestInit & { cookie?: string } = {},
+  init: RequestInit & { cookie?: string | undefined } = {},
 ): Promise<T> {
   const { cookie, ...rest } = init;
   const headers = new Headers(rest.headers);

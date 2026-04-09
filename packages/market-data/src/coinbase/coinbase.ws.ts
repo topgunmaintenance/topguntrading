@@ -1,10 +1,6 @@
 import WebSocket from "ws";
 import type { QuoteHandler, Subscription } from "../contract";
-import {
-  COINBASE_PROVIDER_ID,
-  isTickerEnvelope,
-  tickerEventToQuote,
-} from "./mapping";
+import { isTickerEnvelope, tickerEventToQuote } from "./mapping";
 
 export interface CoinbaseWsOptions {
   url?: string;
@@ -62,7 +58,9 @@ export class CoinbaseWsClient {
       options.createSocket ?? ((url) => new WebSocket(url));
     this.maxReconnectMs = options.maxReconnectMs ?? DEFAULT_MAX_RECONNECT_MS;
     this.heartbeatMs = options.heartbeatMs ?? DEFAULT_HEARTBEAT_MS;
-    this.onError = options.onError;
+    if (options.onError) {
+      this.onError = options.onError;
+    }
   }
 
   subscribe(productIds: string[], handler: QuoteHandler): Subscription {
@@ -70,11 +68,13 @@ export class CoinbaseWsClient {
     const newProducts: string[] = [];
 
     for (const id of productIds) {
-      if (!this.handlers.has(id)) {
-        this.handlers.set(id, new Set());
+      let handlers = this.handlers.get(id);
+      if (!handlers) {
+        handlers = new Set();
+        this.handlers.set(id, handlers);
         newProducts.push(id);
       }
-      this.handlers.get(id)!.add(handler);
+      handlers.add(handler);
       subscribedSymbols.add(id);
     }
 

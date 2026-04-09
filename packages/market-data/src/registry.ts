@@ -1,11 +1,13 @@
 import type { IMarketDataAdapter } from "./contract";
 import { MockAdapter } from "./mock/mock.adapter";
 import { CoinbaseAdapter, type CoinbaseAdapterOptions } from "./coinbase/coinbase.adapter";
+import { KrakenAdapter, type KrakenAdapterOptions } from "./kraken/kraken.adapter";
 
-export type AdapterId = "mock" | "coinbase";
+export type AdapterId = "mock" | "coinbase" | "kraken";
 
 export interface AdapterRegistryOptions {
   coinbase?: CoinbaseAdapterOptions;
+  kraken?: KrakenAdapterOptions;
 }
 
 /**
@@ -47,6 +49,8 @@ export class AdapterRegistry {
         return new MockAdapter();
       case "coinbase":
         return new CoinbaseAdapter(this.options.coinbase);
+      case "kraken":
+        return new KrakenAdapter(this.options.kraken);
       default: {
         const _exhaustive: never = id;
         throw new Error(`Unknown adapter id: ${String(_exhaustive)}`);

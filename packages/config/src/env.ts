@@ -5,11 +5,14 @@
  * zod schema. Throws a readable error at startup if anything required
  * is missing. Every app imports this and supplies its own schema.
  */
-import { z, type ZodType } from "zod";
+import type { z } from "zod";
 
 export type EnvSource = Record<string, string | undefined>;
 
-export function loadEnv<T>(schema: ZodType<T>, source: EnvSource = process.env): T {
+export function loadEnv<T extends z.ZodTypeAny>(
+  schema: T,
+  source: EnvSource = process.env,
+): z.infer<T> {
   const result = schema.safeParse(source);
   if (!result.success) {
     const issues = result.error.issues

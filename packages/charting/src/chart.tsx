@@ -105,8 +105,8 @@ export function Chart({
     };
     // We intentionally omit `height` — applying height changes is
     // cheap and handled by `autoSize`. The chart is rebuilt only on
-    // first mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // first mount. (`react-hooks/exhaustive-deps` isn't wired in
+    // this package's ESLint chain, so no rule disable is needed.)
   }, []);
 
   // Swap in new candles whenever `symbol`, `interval`, or the array changes.

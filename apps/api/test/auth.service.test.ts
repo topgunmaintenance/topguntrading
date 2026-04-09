@@ -13,6 +13,12 @@ const env: Env = {
   AUTH_SECRET: "test-auth-secret-at-least-32-characters-xx",
   SESSION_TTL_SECONDS: 900,
   REFRESH_TTL_SECONDS: 60 * 60 * 24 * 30,
+  MARKET_DATA_PROVIDER: "mock",
+  MARKET_DATA_CACHE_TTL_SECONDS: 60,
+  COINBASE_REST_URL: "https://api.exchange.coinbase.com",
+  COINBASE_WS_URL: "wss://advanced-trade-ws.coinbase.com",
+  KRAKEN_REST_URL: "https://api.kraken.com/0/public",
+  WHALES_DEFAULT_SYMBOL: "kraken:XBTUSD",
 };
 
 type User = {
@@ -36,13 +42,15 @@ type Session = {
   revokedAt: Date | null;
 };
 
-function makePrismaMock() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function makePrismaMock(): any {
   const users = new Map<string, User>();
   const sessions = new Map<string, Session>();
   let userSeq = 0;
   let sessionSeq = 0;
 
-  const prisma = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prisma: any = {
     user: {
       findUnique: vi.fn(async ({ where }: { where: { id?: string; email?: string } }) => {
         if (where.id) return users.get(where.id) ?? null;

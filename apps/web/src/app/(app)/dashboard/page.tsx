@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@topgun/ui";
 import { getCurrentUser } from "@/lib/session";
+import { WhaleActivityCard } from "@/components/dashboard/whale-activity-card";
 
 export default async function DashboardPage(): Promise<JSX.Element> {
   const user = await getCurrentUser();
@@ -15,11 +16,13 @@ export default async function DashboardPage(): Promise<JSX.Element> {
           Welcome{user?.displayName ? `, ${user.displayName}` : ""}.
         </h1>
         <p className="text-sm text-text-secondary">
-          Phase 3 adds watchlists, live quotes, and the chart workspace. Journal,
-          replay, and AI review land in later phases — see{" "}
+          Phase 3 ships watchlists, live quotes, and the chart workspace. Phase
+          3.5 adds observational edge signals — see{" "}
           <code>docs/roadmap.md</code>.
         </p>
       </header>
+
+      <WhaleActivityCard />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>

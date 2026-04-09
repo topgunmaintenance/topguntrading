@@ -93,7 +93,10 @@ describe("coinbaseCandlesToNormalized", () => {
     ];
     const normalized = coinbaseCandlesToNormalized(raw);
     expect(normalized).toHaveLength(3);
-    expect(normalized[0]?.openTime < normalized[1]!.openTime).toBe(true);
+    const first = normalized[0];
+    const second = normalized[1];
+    if (!first || !second) throw new Error("expected at least two candles");
+    expect(first.openTime < second.openTime).toBe(true);
     expect(normalized[0]?.open).toBe("49800");
     expect(typeof normalized[0]?.volume).toBe("string");
   });

@@ -4,6 +4,7 @@ import { MarketDataService } from "./market-data.service";
 import { MarketDataController } from "./market-data.controller";
 import { SubscriptionHub } from "./subscription-hub";
 import { MarketDataStreamGateway } from "./market-data-stream.gateway";
+import { EdgeService } from "./edge.service";
 import { AuthModule } from "../auth/auth.module";
 
 @Module({
@@ -14,7 +15,8 @@ import { AuthModule } from "../auth/auth.module";
     MarketDataService,
     SubscriptionHub,
     MarketDataStreamGateway,
+    EdgeService,
   ],
-  exports: [MarketDataService, MarketDataAdapterRegistry],
+  exports: [MarketDataService, MarketDataAdapterRegistry, EdgeService],
 })
 export class MarketDataModule {}

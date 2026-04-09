@@ -5,6 +5,8 @@ import type {
   CandleRequest,
   Quote,
   SymbolMeta,
+  Trade,
+  TradesRequest,
 } from "@topgun/types";
 
 /**
@@ -38,6 +40,14 @@ export interface IMarketDataAdapter {
 
   getCandles(request: CandleRequest): Promise<Candle[]>;
   streamQuotes(symbols: string[], handler: QuoteHandler): Subscription;
+
+  /**
+   * Recent public trades (exchange tape). Optional — adapters that
+   * do not expose per-trade data simply omit this method. Callers
+   * must check `capabilities.recentTrades` before calling. Added in
+   * Phase 3.5 under ADR-0026 for the Kraken whale-activity feature.
+   */
+  getRecentTrades?(request: TradesRequest): Promise<Trade[]>;
 
   /**
    * Dispose any long-lived resources (sockets, timers). Called by

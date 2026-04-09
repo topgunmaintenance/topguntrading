@@ -136,6 +136,102 @@ export const AttributionInfoSchema = z.object({
 });
 export type AttributionInfo = z.infer<typeof AttributionInfoSchema>;
 
+// ---- Public trades (tape) ----------------------------------------------------
+
+/**
+ * A single public trade from an exchange tape.
+ *
+ * Aggressor-side labels deliberately avoid "buy" / "sell" per
+ * docs/design-system.md §"Voice and microcopy": those verbs are
+ * reserved for actual order intent (which we do not execute).
+ * "taker_buy" means the incoming taker order lifted the offer;
+ * "taker_sell" means the taker hit the bid. "unknown" is used when
+ * the provider does not expose aggressor side.
+ *
+ * Price and size are decimal strings to preserve provider precision
+ * across JSON serialization boundaries.
+ */
+export const TradeSchema = z.object({
+  symbol: SymbolRefSchema,
+  time: IsoDateSchema,
+  price: z.string(),
+  size: z.string(),
+  side: z.enum(["taker_buy", "taker_sell", "unknown"]),
+  tradeId: z.string().min(1),
+});
+export type Trade = z.infer<typeof TradeSchema>;
+
+export const TradesRequestSchema = z.object({
+  symbol: SymbolRefSchema,
+  /** Max trades to return. Adapter may cap lower. */
+  limit: z.number().int().positive().max(1000).optional(),
+  /** Cursor: return trades at or after this time. */
+  since: IsoDateSchema.optional(),
+});
+export type TradesRequest = z.infer<typeof TradesRequestSchema>;
+
+// ---- Edge observations (detector output) -----------------------------------
+
+/**
+ * Structured observation emitted by a detector in `@topgun/trading-rules`.
+ *
+ * Per ADR-0027: observations are observational, not directive. Detectors
+ * never emit prose — UI copy is rendered from the fields at display time.
+ * `evidence` is a structured bag of raw facts the AI layer will consume
+ * in a later phase. `severity` is calibrated honestly (see per-detector
+ * README / header comments).
+ */
+export const EdgeSignalKindSchema = z.enum([
+  "large_trade",
+  "unusual_volume",
+  "momentum",
+]);
+export type EdgeSignalKind = z.infer<typeof EdgeSignalKindSchema>;
+
+export const EdgeSignalSeveritySchema = z.enum(["low", "medium", "high"]);
+export type EdgeSignalSeverity = z.infer<typeof EdgeSignalSeveritySchema>;
+
+/**
+ * Direction bias for an edge observation. Uses design-system-safe
+ * words only: taker aggressor for tape events, long/short bias for
+ * directional observations. Never "buy" / "sell".
+ */
+export const EdgeSignalDirectionSchema = z.enum([
+  "taker_buy",
+  "taker_sell",
+  "long_bias",
+  "short_bias",
+]);
+export type EdgeSignalDirection = z.infer<typeof EdgeSignalDirectionSchema>;
+
+export const EdgeSignalSchema = z.object({
+  id: z.string().min(1),
+  kind: EdgeSignalKindSchema,
+  symbol: SymbolRefSchema,
+  observedAt: IsoDateSchema,
+  severity: EdgeSignalSeveritySchema,
+  /** Optional direction hint. Omitted when the observation is neutral. */
+  direction: EdgeSignalDirectionSchema.optional(),
+  /**
+   * Neutral one-liner describing what was observed. Never a recommendation.
+   * Rendered directly in the UI; keep it short, factual, and past-tense.
+   */
+  headline: z.string().min(1).max(280),
+  /**
+   * Raw numeric facts that triggered this observation. The AI layer
+   * will read these in a later phase to generate plain-language
+   * summaries. Strings are decimal-preserving; numbers are for
+   * counts, windows, and indices only.
+   */
+  evidence: z.record(z.union([z.string(), z.number()])),
+  /** Traceability — which detector (and version) emitted this signal. */
+  source: z.object({
+    detectorId: z.string().min(1),
+    version: z.string().min(1),
+  }),
+});
+export type EdgeSignal = z.infer<typeof EdgeSignalSchema>;
+
 // ---- Adapter capabilities ----------------------------------------------------
 
 export const AdapterCapabilitiesSchema = z.object({
@@ -146,6 +242,17 @@ export const AdapterCapabilitiesSchema = z.object({
     trades: z.boolean(),
     level2: z.boolean(),
   }),
+  /**
+   * Whether the adapter supports `IMarketDataAdapter.getRecentTrades`.
+   * Optional so pre-Phase 3.5 adapters (mock, coinbase) continue to
+   * validate without touching their capability manifests.
+   */
+  recentTrades: z.boolean().optional(),
+  /**
+   * Whether the adapter supports `IMarketDataAdapter.getBatchQuotes`.
+   * Reserved for Phase 3.5 Slice 2 (Yahoo watchlist snapshots).
+   */
+  batchQuotes: z.boolean().optional(),
 });
 export type AdapterCapabilities = z.infer<typeof AdapterCapabilitiesSchema>;
 

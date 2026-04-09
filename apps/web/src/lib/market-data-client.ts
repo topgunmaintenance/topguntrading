@@ -1,10 +1,12 @@
 import type {
   AttributionInfo,
   Candle,
+  EdgeSignal,
   Interval,
   StoredSymbol,
   SymbolMeta,
   SymbolRef,
+  Trade,
 } from "@topgun/types";
 import { env } from "./env";
 import { ApiCallError } from "./api-client";
@@ -16,7 +18,7 @@ import { ApiCallError } from "./api-client";
 
 async function call<T>(
   path: string,
-  init: RequestInit & { cookie?: string } = {},
+  init: RequestInit & { cookie?: string | undefined } = {},
 ): Promise<T> {
   const { cookie, ...rest } = init;
   const headers = new Headers(rest.headers);
@@ -94,5 +96,42 @@ export const marketDataClient = {
       { cookie },
     );
     return candles;
+  },
+
+  /**
+   * Phase 3.5 (ADR-0026) — raw public trade tape.
+   * Decimal strings are preserved end-to-end.
+   */
+  async getTrades(
+    request: {
+      symbol: SymbolRef;
+      limit?: number;
+      since?: string;
+    },
+    cookie?: string,
+  ): Promise<{ trades: Trade[]; attribution: AttributionInfo }> {
+    const params = new URLSearchParams({ symbol: request.symbol });
+    if (request.limit) params.set("limit", String(request.limit));
+    if (request.since) params.set("since", request.since);
+    return call<{ trades: Trade[]; attribution: AttributionInfo }>(
+      `/market-data/trades?${params.toString()}`,
+      { cookie },
+    );
+  },
+
+  /**
+   * Phase 3.5 (ADR-0027) — whale-activity observations. If `symbol`
+   * is omitted the API falls back to env.WHALES_DEFAULT_SYMBOL.
+   */
+  async getWhaleSignals(
+    symbol?: SymbolRef,
+    cookie?: string,
+  ): Promise<{ signals: EdgeSignal[]; attribution: AttributionInfo }> {
+    const path = symbol
+      ? `/market-data/whales?symbol=${encodeURIComponent(symbol)}`
+      : `/market-data/whales`;
+    return call<{ signals: EdgeSignal[]; attribution: AttributionInfo }>(path, {
+      cookie,
+    });
   },
 };

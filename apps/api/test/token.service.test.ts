@@ -12,6 +12,12 @@ function makeEnv(overrides: Partial<Env> = {}): Env {
     AUTH_SECRET: "test-auth-secret-at-least-32-characters-xx",
     SESSION_TTL_SECONDS: 900,
     REFRESH_TTL_SECONDS: 60 * 60 * 24 * 30,
+    MARKET_DATA_PROVIDER: "mock",
+    MARKET_DATA_CACHE_TTL_SECONDS: 60,
+    COINBASE_REST_URL: "https://api.exchange.coinbase.com",
+    COINBASE_WS_URL: "wss://advanced-trade-ws.coinbase.com",
+    KRAKEN_REST_URL: "https://api.kraken.com/0/public",
+    WHALES_DEFAULT_SYMBOL: "kraken:XBTUSD",
     ...overrides,
   };
 }

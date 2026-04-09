@@ -19,6 +19,7 @@
     "build:packages": "pnpm -r --filter \"./packages/*\" build",
     "dev:api": "pnpm --filter @topgun/api dev",
     "dev:web": "pnpm --filter @topgun/web dev",
+    "dev:all": "bash scripts/dev-all.sh",
     "lint": "pnpm -r --parallel lint",
     "typecheck": "pnpm -r --parallel typecheck",
     "test": "pnpm -r --parallel test",

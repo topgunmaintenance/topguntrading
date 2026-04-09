@@ -19,6 +19,12 @@ export {
   COINBASE_GRANULARITY,
   COINBASE_CANDLE_LIMIT,
 } from "./coinbase/mapping";
+export { KrakenAdapter, type KrakenAdapterOptions } from "./kraken/kraken.adapter";
+export {
+  KRAKEN_PROVIDER_ID,
+  KRAKEN_INTERVAL_MINUTES,
+  KRAKEN_OHLC_LIMIT,
+} from "./kraken/mapping";
 
 export { AdapterRegistry, type AdapterId, type AdapterRegistryOptions } from "./registry";
 

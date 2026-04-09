@@ -16,6 +16,10 @@ export default defineConfig({
         __dirname,
         "../../packages/market-data/src/index.ts",
       ),
+      "@topgun/trading-rules": resolve(
+        __dirname,
+        "../../packages/trading-rules/src/index.ts",
+      ),
     },
   },
 });
